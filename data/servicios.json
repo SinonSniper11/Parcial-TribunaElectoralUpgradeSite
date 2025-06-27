@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "nombre": "Cédula de Identidad",
+    "descripcion": "Solicita o renueva tu cédula de identidad personal.",
+    "icono": "/globe.svg"
+  },
+  {
+    "id": 2,
+    "nombre": "Registro Civil",
+    "descripcion": "Trámites relacionados con nacimientos, matrimonios y defunciones.",
+    "icono": "/next.svg"
+  },
+  {
+    "id": 3,
+    "nombre": "Voto en el Extranjero",
+    "descripcion": "Información y trámites para panameños en el exterior.",
+    "icono": "/vercel.svg"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "titulo": "Nueva jornada de cedulación en el interior",
+    "resumen": "El Tribunal Electoral realiza jornadas móviles en varias provincias.",
+    "img": "/file.svg"
+  },
+  {
+    "id": 2,
+    "titulo": "Resultados oficiales de elecciones",
+    "resumen": "Consulta los resultados de las últimas elecciones generales.",
+    "img": "/globe.svg"
+  },
+  {
+    "id": 3,
+    "titulo": "Capacitación a funcionarios",
+    "resumen": "Se capacita a funcionarios en temas de transparencia y atención ciudadana.",
+    "img": "/window.svg"
+  }
+]
