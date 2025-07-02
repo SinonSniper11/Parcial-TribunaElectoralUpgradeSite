@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { useRouter } from 'next/navigation';
 import {
   Download,
@@ -22,6 +24,9 @@ export default function FacturaPage() {
   const [metodoPago, setMetodoPago] = useState('');
   const [loading, setLoading] = useState(true);
   const [facturaGenerada, setFacturaGenerada] = useState<Factura | null>(null);
+  const [numeroTarjeta, setNumeroTarjeta] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const impuestoFijo = 0.07;
 
@@ -35,7 +40,7 @@ export default function FacturaPage() {
           const datos = JSON.parse(datosGuardados);
           setCedulacionData(datos);
         } else {
-          router.push('/pages/cedulacion');
+          router.push('/cedulacion');
           return;
         }
 
@@ -243,9 +248,13 @@ export default function FacturaPage() {
     }
   };
 
-  const generarPDF = () => {
+const generarPDF = () => {
+  if (facturaGenerada) {
     generatePDF(facturaGenerada);
-  };
+  } else {
+    alert('No hay factura generada para exportar.');
+  }
+};
 
   if (loading) {
     return (
@@ -268,7 +277,7 @@ export default function FacturaPage() {
               : 'No se pudo cargar la información del servicio'}
           </p>
           <button
-            onClick={() => router.push('/pages/cedulacion')}
+            onClick={() => router.push('/cedulacion')}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
           >
             Volver a Cedulación
@@ -281,8 +290,10 @@ export default function FacturaPage() {
   const { subtotal, impuestos, total } = calcularTotales();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto shadow-sm bg-white">
+    <>
+      <Header />
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-4xl mx-auto shadow-sm bg-white">
         <div className="bg-white rounded-lg p-6 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -297,7 +308,7 @@ export default function FacturaPage() {
               </div>
             </div>
             <button
-              onClick={() => router.push('/pages/cedulacion')}
+              onClick={() => router.push('/cedulacion')}
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -341,12 +352,7 @@ export default function FacturaPage() {
               <p className="text-sm text-gray-600">Género</p>
               <p className="font-medium text-black">{cedulacionData.genero}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Tribunal de Entrega</p>
-              <p className="font-medium text-black">
-                {cedulacionData.tribunal?.nombre}
-              </p>
-            </div>
+            
           </div>
         </div>
 
@@ -360,49 +366,25 @@ export default function FacturaPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Servicio
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tipo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cantidad
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Precio
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Impuesto (7%)</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {servicio.nombre}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {servicio.tipoServicio}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    1
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    B/.{' '}
-                    {(() => {
-                      const precio =
-                        typeof servicio.precio === 'string'
-                          ? parseFloat(servicio.precio)
-                          : typeof servicio.precio === 'number'
-                          ? servicio.precio
-                          : 0;
-                      return (!isNaN(precio) ? precio : 0).toFixed(2);
-                    })()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    B/. {subtotal.toFixed(2)}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{servicio.nombre}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{servicio.tipoServicio}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">B/.{' '}{(() => {
+                    const precio = typeof servicio.precio === 'string' ? parseFloat(servicio.precio) : typeof servicio.precio === 'number' ? servicio.precio : 0;
+                    return (!isNaN(precio) ? precio : 0).toFixed(2);
+                  })()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">B/. {impuestos.toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">B/. {total.toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
@@ -410,115 +392,189 @@ export default function FacturaPage() {
         </div>
 
         {/* Método de Pago y Totales */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Método de Pago */}
-          <div className="bg-white rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <CreditCard className="h-5 w-5 mr-2 text-blue-600" />
-              Método de Pago
-            </h3>
-            <div className="space-y-3">
-              {[
-                { value: 'efectivo', label: 'Efectivo' },
-                { value: 'tarjeta', label: 'Tarjeta de Crédito/Débito' },
-                { value: 'transferencia', label: 'Transferencia Bancaria' },
-                { value: 'cheque', label: 'Cheque' },
-              ].map(opcion => (
-                <label
-                  key={opcion.value}
-                  className="flex items-center space-x-3 cursor-pointer"
-                >
-                  <input
-                    type="radio"
-                    name="metodoPago"
-                    value={opcion.value}
-                    checked={metodoPago === opcion.value}
-                    onChange={e => setMetodoPago(e.target.value)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  />
-                  <span className="text-sm font-medium text-gray-700">
-                    {opcion.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
+        {facturaGenerada === null && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Método de Pago */}
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                <CreditCard className="h-5 w-5 mr-2 text-blue-600" />
+                Método de Pago
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { value: 'efectivo', label: 'Efectivo' },
+                  { value: 'tarjeta', label: 'Tarjeta de Crédito/Débito' },
+                ].map(opcion => (
+                  <label
+                    key={opcion.value}
+                    className="flex items-center space-x-3 cursor-pointer"
+                  >
+                    <input
+                      type="radio"
+                      name="metodoPago"
+                      value={opcion.value}
+                      checked={metodoPago === opcion.value}
+                      onChange={e => setMetodoPago(e.target.value)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      {opcion.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
 
-          {/* Resumen de Totales */}
-          <div className="bg-white rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Resumen de Pago
-            </h3>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Subtotal:</span>
-                <span className="font-medium text-black">
-                  B/. {subtotal.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Impuestos (7%):</span>
-                <span className="font-medium text-black">
-                  B/. {impuestos.toFixed(2)}
-                </span>
-              </div>
-              <div className="border-t pt-3">
+              {/* Campos adicionales para tarjeta */}
+              {metodoPago === 'tarjeta' && (
+                <div className="mt-4 space-y-3">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9 ]*"
+                    placeholder="Número de tarjeta"
+                    className="w-full p-2 border rounded text-black placeholder-gray-400 tracking-widest"
+                    maxLength={19}
+                    value={numeroTarjeta}
+                    onChange={e => {
+                      // Solo números, máximo 16 dígitos, formateado en bloques de 4
+                      let value = e.target.value.replace(/\D/g, '').slice(0, 16);
+                      value = value.replace(/(.{4})/g, '$1 ').trim();
+                      setNumeroTarjeta(value);
+                    }}
+                  />
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="CVV"
+                    className="w-full p-2 border rounded text-black placeholder-gray-400"
+                    maxLength={3}
+                    value={cvv}
+                    onChange={e => {
+                      // Solo números, máximo 3 dígitos
+                      let value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                      setCvv(value);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(true)}
+                    disabled={loading || numeroTarjeta.length < 4}
+                    className={`w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed`}
+                  >
+                    {loading ? 'Procesando...' : 'Pagar'}
+                  </button>
+                  {/* Confirmación modal */}
+                  {showConfirm && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+                      <div className="bg-white p-6 rounded shadow max-w-sm w-full text-center">
+                        <p className="mb-4 text-black">
+                          ¿Seguro que desea pagar con la tarjeta terminación <strong>{numeroTarjeta.slice(-4)}</strong>?
+                        </p>
+                        <div className="flex justify-center gap-4">
+                          <button
+                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                            onClick={async () => {
+                              setShowConfirm(false);
+                              await handleGenerarFactura();
+                            }}
+                          >
+                            Sí, pagar
+                          </button>
+                          <button
+                            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                            onClick={() => setShowConfirm(false)}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Resumen de Totales */}
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Resumen de Pago
+              </h3>
+              <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-lg font-bold text-black">Total:</span>
-                  <span className="text-lg font-bold text-blue-600">
-                    B/. {total.toFixed(2)}
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-medium text-black">
+                    B/. {subtotal.toFixed(2)}
                   </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Impuestos (7%):</span>
+                  <span className="font-medium text-black">
+                    B/. {impuestos.toFixed(2)}
+                  </span>
+                </div>
+                <div className="border-t pt-3">
+                  <div className="flex justify-between">
+                    <span className="text-lg font-bold text-black">Total:</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      B/. {total.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Generar factura */}
-        <div className="bg-white rounded-lg p-6">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {facturaGenerada === null ? (
-              <button
-                onClick={handleGenerarFactura}
-                disabled={!metodoPago || loading}
-                className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2 ${
-                  metodoPago && !loading
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                <FileText className="h-5 w-5" />
-                <span>{loading ? 'Generando...' : 'Generar Factura'}</span>
-              </button>
-            ) : (
-              <div className="flex flex-col sm:flex-row gap-4">
+        {!(metodoPago === 'tarjeta' || metodoPago === 'transferencia') && (
+          <div className="bg-white rounded-lg p-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {facturaGenerada === null ? (
                 <button
-                  onClick={generarPDF}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2"
+                  onClick={handleGenerarFactura}
+                  disabled={!metodoPago || loading}
+                  className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2 ${
+                    metodoPago && !loading
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
-                  <Download className="h-5 w-5" />
-                  <span>Descargar PDF</span>
+                  <FileText className="h-5 w-5" />
+                  <span>{loading ? 'Generando...' : 'Generar Factura'}</span>
                 </button>
-                <button
-                  onClick={() => setFacturaGenerada(null)}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium"
-                >
-                  Nueva Factura
-                </button>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={generarPDF}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2"
+                  >
+                    <Download className="h-5 w-5" />
+                    <span>Descargar PDF</span>
+                  </button>
+                  <button
+                    onClick={() => setFacturaGenerada(null)}
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium"
+                  >
+                    Nueva Factura
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {facturaGenerada && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-green-800 text-center">
+                  ✅ Factura generada exitosamente:{' '}
+                  <strong>{facturaGenerada.numeroFactura}</strong>
+                </p>
               </div>
             )}
           </div>
-
-          {facturaGenerada && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-800 text-center">
-                ✅ Factura generada exitosamente:{' '}
-                <strong>{facturaGenerada.numeroFactura}</strong>
-              </p>
-            </div>
-          )}
+        )}
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

@@ -54,7 +54,7 @@ export default function ServicesSection() {
                   {service.description}
                 </p>
                 <Link
-                  href={`/servicios/${service.slug}`}
+                  href={service.slug === "cedulacion" ? "/cedulacion" : `/servicios/${service.slug}`}
                   className="text-black hover:underline font-medium inline-flex items-center gap-2 transition-colors"
                 >
                   Leer más <ArrowRight className="h-4 w-4 ml-2" />
